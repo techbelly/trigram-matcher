@@ -1,4 +1,4 @@
-require 'data_mapper'
+require 'datamapper'
 require 'string-ext'
 
 DataMapper.setup(:default, ENV['DATABASE_URL'] || "sqlite3://#{Dir.pwd}/development.db")
