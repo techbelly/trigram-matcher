@@ -12,7 +12,7 @@ class Thing
   has n, :aliases
   
   def self.db_matches_for(trigrams)
-    sql = "SELECT count(*) AS count, aliases.* FROM trigrams, aliases WHERE token in ? and trigrams.alias_id = aliases.id group by alias_id order by count desc"
+    sql = "SELECT count(*) AS count, aliases.id, aliases.text, aliases.thing_id FROM trigrams, aliases WHERE token in ? and trigrams.alias_id = aliases.id group by alias_id, aliases.id, aliases.text, aliases.thing_id order by count desc"
     DataMapper.repository(:default).adapter.select(sql, trigrams.to_a).each do |i|
       thing = Thing.get(i.thing_id)
       yield thing,i.text
