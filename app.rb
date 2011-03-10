@@ -27,5 +27,6 @@ end
 
 get '/__reparse' do
   make_trigrams
+  "REPARSED."
 end
 
