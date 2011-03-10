@@ -3,35 +3,22 @@ require 'json'
 require 'string-ext'
 require 'db'
 
-
 def make_trigrams
-  DataMapper.repository(:default).adapter.execute("DELETE FROM things")
-  DataMapper.repository(:default).adapter.execute("DELETE FROM aliases")
-  DataMapper.repository(:default).adapter.execute("DELETE FROM trigrams")
-  things = JSON.load(open("things.json"))
-  things.each do |t|
-    type = t['type']
-    ignore = t['ignore']
-    matches = t['matches']    
-    t['matches'].each do |m|
-      pk, texts = m[0],m[1]
-      db_thing = Thing.create(:type=> type, :canonical_text => texts[0], :pk => pk)
-      texts.each do |te|
-        te_stripped = te.remove_all(ignore)
+  clear_database
+  collections = JSON.load(open("things.json"))
+  collections.each do |type|
+    type, ignore, matches = type['type'], type['ignore'], type['matches']    
+    matches.each do |m|
+      pk, texts = *m
+      db_thing = Thing.create(:type=> type, :canonical_text => texts.first, :pk => pk)
+      texts.each do |text|
+        text_stripped = text.remove_all(ignore)
+        trigrams = text_stripped.to_trigrams
         
-        my_alias = db_thing.aliases.create(:text => te)
-        trigrams = te_stripped.to_trigrams
-        trigrams.each do |tr|
-          my_alias.trigrams.create(:token=>tr)
+        db_thing.add_alias(text,trigrams)
+        if text_stripped != text
+          db_thing.add_alias(text_stripped,trigrams)
         end
-  
-        if te_stripped != te
-          second_alias = db_thing.aliases.create(:text => te_stripped)
-          trigrams.each do |tr|
-            second_alias.trigrams.create(:token=>tr)
-          end
-        end
-        
       end
     end
   end

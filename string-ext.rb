@@ -8,7 +8,7 @@ class String
             trigrams.add(word[idx, 3])
         end
     end
-    trigrams.to_a
+    trigrams
   end
 
   def remove_all(ignores)
